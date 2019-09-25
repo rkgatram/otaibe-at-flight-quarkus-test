@@ -15,11 +15,8 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.util.Set;
 
 @ApplicationScoped
@@ -63,7 +60,8 @@ public class Service {
         Set<Bean<?>> beans = getBeanManager().getBeans(name);
         Bean<?> bean = beans.stream().findFirst().get();
         CreationalContext<?> creationalContext = getBeanManager().createCreationalContext(bean);
-//        Set<InjectionPoint> injectionPoints = bean.getInjectionPoints();
+        // bean.getInjectionPoints is not implemented
+        //        Set<InjectionPoint> injectionPoints = bean.getInjectionPoints();
         for (int i = 0; i < 3; i++) {
             Object reference = getBeanManager().getReference(
                     bean,
