@@ -2,28 +2,30 @@ package org.otaibe.at.flight.test.service;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.otaibe.at.flight.test.config.QuarkusConfig;
 import org.otaibe.at.flight.test.config.SpringConfig;
 import org.otaibe.at.flight.test.domain.Entity001;
 import org.otaibe.at.flight.test.domain.Entity003;
+import org.otaibe.at.flight.test.utils.BeanManagerUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
-@ApplicationScoped
+@org.springframework.stereotype.Service
 @Getter
 @Setter
 @Slf4j
+@ToString(callSuper = true)
 public class Service {
 
     @Autowired
@@ -39,6 +41,15 @@ public class Service {
 
     @Inject
     BeanManager beanManager;
+    @Inject
+    BeanManagerUtils beanManagerUtils;
+
+    Collection<BaseProcessor> processors = new ArrayList<>();
+
+    @PostConstruct
+    public void init() {
+        processors = BaseProcessor.PROCESSORS;
+    }
 
     public void consume() {
         log.info("entity spring print");
@@ -65,44 +76,17 @@ public class Service {
     private <T> void printEntity(String name, Class<T> clazz) {
         for (int i = 0; i < 3; i++) {
             Object reference = StringUtils.hasLength(name) ?
-                    createBean(name, clazz) : createBean(clazz);
+                    getBeanManagerUtils().createBean(getBeanManager(), name, clazz) : getBeanManagerUtils().createBean(getBeanManager(), clazz);
             log.info("entity {}: {}", i, reference);
         }
     }
 
     private void printService() {
         for (int i = 0; i < 3; i++) {
-            Object reference = createBean(Service.class);
+            Object reference = getBeanManagerUtils().createBean(getBeanManager(), Service.class);
             log.info("service {}: {}", i, reference);
         }
     }
 
-    private <T> T createBean(Class<T> clazz) {
-        Set<Bean<?>> beans = getBeanManager().getBeans(clazz);
-        return createBean(clazz, beans);
-    }
-
-    private <T> T createBean(String name, Class<T> clazz) {
-        Set<Bean<?>> beans = getBeanManager().getBeans(name);
-        return createBean(clazz, beans);
-    }
-
-    private <T> T createBean(Class<T> clazz, Set<Bean<?>> beans) {
-        Bean<?> bean = beans.stream()
-                .filter(bean1 -> bean1.getTypes()
-                        .stream()
-                        .filter(type -> type.equals(clazz))
-                        .findFirst()
-                        .isPresent()
-                )
-                .findFirst()
-                .get();
-        CreationalContext<?> creationalContext = getBeanManager().createCreationalContext(bean);
-
-        return (T) getBeanManager().getReference(
-                bean,
-                clazz,
-                creationalContext);
-    }
 
 }
