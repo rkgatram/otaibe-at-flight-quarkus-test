@@ -12,11 +12,14 @@ import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.S3ResponseMetadata;
 import software.amazon.awssdk.utils.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.CompletionException;
 
 @ApplicationScoped
@@ -70,6 +73,15 @@ public class AwsService {
                                     fluxSink.complete();
                                     return;
                                 }
+                                Instant lastModified = getObjectResponseResponseBytes.response().lastModified();
+                                log.info("lastModified: {}", lastModified);
+                                Map<String, String> metadata = getObjectResponseResponseBytes.response().metadata();
+                                log.info("metadata: {}", metadata);
+                                S3ResponseMetadata s3ResponseMetadata = getObjectResponseResponseBytes
+                                        .response()
+                                        .responseMetadata()
+                                        ;
+                                log.info("s3ResponseMetadata: {}", s3ResponseMetadata);
                                 String s = StringUtils.fromBytes(
                                         getObjectResponseResponseBytes.asByteArray(), StandardCharsets.UTF_8);
                                 fluxSink.next(s);
