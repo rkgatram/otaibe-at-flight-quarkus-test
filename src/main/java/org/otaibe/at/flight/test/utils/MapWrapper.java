@@ -23,7 +23,7 @@ public class MapWrapper {
     @Getter
     @Setter
     @Autowired
-    private CastUtils castUtils;
+    CastUtils castUtils;
 
     @PostConstruct
     public void init() {
