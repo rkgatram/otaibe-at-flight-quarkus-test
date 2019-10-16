@@ -2,6 +2,7 @@ package org.otaibe.at.flight.test.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
  * Created by triphon on 14-10-11.
  */
 @Component
+@Slf4j
 public class MapWrapper {
 
     @Getter
@@ -82,11 +84,13 @@ public class MapWrapper {
     public Map<String, Object> mergeStringObjectMap(Map<String, Object> map1, Map<String, Object> map2) {
         return Stream.of(map1, map2)
                 .flatMap(map -> map.entrySet().stream())
+                .filter(entry -> null != entry.getKey() && null != entry.getValue())
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
                         (v1, v2) -> {
                             if (Map.class.isAssignableFrom(v2.getClass())) {
+                                //log.info("{} {}", v1, v2);
                                 return mergeStringObjectMap((Map) v1, (Map) v2);
                             }
                             return v2;
